@@ -1,0 +1,12 @@
+# db credentials
+POSTGRES_USER=user
+POSTGRES_PASSWORD=password
+POSTGRES_DB=sales_db
+
+# Celery settings
+CELERY_BROKER_URL=redis://redis:6379/0
+CELERY_RESULT_BACKEND=redis://redis:6379/0
+
+# web settings
+UID=1000
+GID=1000

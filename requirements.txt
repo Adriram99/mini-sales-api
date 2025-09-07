@@ -1,0 +1,23 @@
+# framework
+Django>=4.2,<5.0
+
+# Django REST framework
+djangorestframework>=3.14,<4.0
+
+# PostgreSQL database adapter
+psycopg2-binary>=2.9,<3.0
+
+#Documentation OpenAPI
+drf-spectacular==0.27.0
+
+# Celery for asynchronous tasks
+celery>=5.4,<6.0
+redis>=4.5,<5.0
+django-celery-beat==2.6.0
+
+# wsgi server
+gunicorn>=20.1,<21.0
+
+# Environment variable management
+python-decouple>=3.7,<4.0
+dj-database-url>=1.0,<2.0
