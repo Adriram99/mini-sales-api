@@ -50,7 +50,8 @@ INSTALLED_APPS = [
     # Local apps
     'products',
     'orders',
-    'customers'
+    'customers',
+    'core'
 ]
 
 MIDDLEWARE = [
@@ -155,7 +156,7 @@ REST_FRAMEWORK = {
         # AGREGAR AQUÍ JWT O TOKEN AUTHENTICATION SI ES NECESARIO
     ],
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated'
+        'rest_framework.permissions.DjangoModelPermissions'
     ],
     'DEFAULT_FILTER_BACKENDS': [
         'django_filters.rest_framework.DjangoFilterBackend'
