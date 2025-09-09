@@ -1,6 +1,7 @@
 from django.db import models
 from django.core.validators import MinValueValidator
 from django.db.models import Q
+from decimal import Decimal
 
 
 # Create your models here.
@@ -13,7 +14,7 @@ class Label(models.Model):
 class Product(models.Model):
     name = models.CharField(max_length=200)
     sku = models.CharField(max_length=50, unique=True)
-    price = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0.00)])
+    price = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(Decimal(0))])
     stock = models.IntegerField(validators=[MinValueValidator(0)])
     labels = models.ManyToManyField(Label, related_name='products')
 
@@ -21,6 +22,7 @@ class Product(models.Model):
         return f"{self.name} ({self.sku})"
     
     class Meta:
+        ordering = ['id']
         constraints = [
             models.CheckConstraint(check=Q(stock__gte=0), name='stock_gte_0'),
         ]
