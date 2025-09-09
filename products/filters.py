@@ -4,7 +4,7 @@ from .models import Product
 class ProductFilter(django_filters.FilterSet):
     min_price = django_filters.NumberFilter(field_name="price", lookup_expr='gte')
     max_price = django_filters.NumberFilter(field_name="price", lookup_expr='lte')
-    tag = django_filters.CharFilter(field_name="labels__name", lookup_expr='iexact')
+    tag = django_filters.CharFilter(field_name="sku", lookup_expr='iexact')
 
     class Meta:
         model = Product
