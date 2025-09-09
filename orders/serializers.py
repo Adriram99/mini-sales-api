@@ -36,6 +36,8 @@ class OrderSerializer(serializers.ModelSerializer):
                 product = item_data['product']
                 quantity = item_data['quantity']
 
+                product = Product.objects.select_for_update.get(pk=product.pk)
+
                 # freeze the unit price at the time of order creation
                 unit_price = product.price
 
