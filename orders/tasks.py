@@ -24,7 +24,7 @@ def export_daily_orders_to_csv():
 
     with open(filename, mode='w', newline='') as csvfile:
         writer = csv.writer(csvfile)
-        writer.writerow(['Order ID', 'Customer Email', 'Items count', 'Total Amount', 'Status', 'Created At'])
+        writer.writerow(['Order ID', 'Customer Email', 'Items Count', 'Total Amount', 'Status', 'Created At'])
 
         for order in orders:
             items_count = order.items.count()
