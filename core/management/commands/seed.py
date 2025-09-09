@@ -29,10 +29,10 @@ class Command(BaseCommand):
 
         self.stdout.write('Seeding data...')
         self.seed_users(users_data)
-        self.seed_labels(5)
-        self.seed_products(5)
-        self.seed_customers(3)
-        self.seed_orders(4)
+        self.seed_labels(10)
+        self.seed_products(10)
+        self.seed_customers(10)
+        self.seed_orders(10)
         self.stdout.write('Seeding completed.')
     
     def seed_users(self, users_data):
@@ -69,7 +69,7 @@ class Command(BaseCommand):
     def seed_customers(self, count):
         for _ in range(count):
             Customer.objects.create(
-                full_name=fake.name,
+                full_name=fake.name(),
                 email=fake.unique.email()
             )
         self.stdout.write(f'Created {count} customers.')
