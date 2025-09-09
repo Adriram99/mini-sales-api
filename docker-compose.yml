@@ -19,6 +19,7 @@ services:
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - .:/app
+      - ./reports:/tmp
     ports:
       - "8000:8000"
     depends_on:
@@ -32,6 +33,7 @@ services:
     command: celery -A sales_api worker --loglevel=info
     volumes:
       - .:/app
+      - ./reports:/tmp
     env_file: .env
   
   celery-beat:
@@ -39,6 +41,7 @@ services:
     command: celery -A sales_api beat --loglevel=info
     volumes:
       - .:/app
+      - ./reports:/tmp
     depends_on:
       - redis
       - db
