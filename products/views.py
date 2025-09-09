@@ -3,18 +3,22 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
+from django.db import IntegrityError
+from rest_framework.exceptions import ValidationError
+from rest_framework.filters import OrderingFilter
+
 from .models import Product, Label
 from .serializers import ProductSerializer, ProductCreateUpdateSerializer, LabelSerializer
 from .filters import ProductFilter
-from django.db import IntegrityError
-from rest_framework.exceptions import ValidationError
+
 
 
 # Create your views here.
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
     filterset_class = ProductFilter
+    ordering = ['id']
 
     def get_serializer_class(self):
         if self.action in ['create', 'update', 'partial_update']:

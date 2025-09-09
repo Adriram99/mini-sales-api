@@ -1,19 +1,22 @@
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from rest_framework.filters import OrderingFilter
+from django_filters.rest_framework import DjangoFilterBackend
+from django.db import transaction
+
 from .models import Order
 from .serializers import OrderSerializer
 from .filters import OrderFilter
-from django_filters.rest_framework import DjangoFilterBackend
-from django.db import transaction
 
 
 # Create your views here.
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all().select_related("customer").prefetch_related("items__product")
     serializer_class = OrderSerializer
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
     filterset_class = OrderFilter
+    ordering = ['-created_at']
 
     # POST /orders/{id}/pay/ -> to pay for an order
     @action(detail=True, methods=['post'])
