@@ -17,7 +17,7 @@ class Order(models.Model):
         return sum(item.subtotal() for item in self.items.all())
 
     def __str__(self):
-        return f"Order {self.id} - {self.customer.first_name} {self.customer.last_name} - {self.status}"
+        return f"Order {self.id} - {self.customer.full_name} - {self.status}"
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')

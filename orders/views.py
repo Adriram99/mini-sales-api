@@ -35,8 +35,8 @@ class OrderViewSet(viewsets.ModelViewSet):
         order = self.get_object()
         if order.status == 'CANCELLED':
             return Response({'error': 'Order already cancelled'}, status=status.HTTP_400_BAD_REQUEST)
-        if order.status not in ['PENDING']:
-            return Response({'error': 'Order cannot be canceled'}, status=status.http_409_CONFLICT)
+        if order.status not in ['PENDING', 'PAID']:
+            return Response({'error': 'Order cannot be canceled'}, status=status.HTTP_409_CONFLICT)
         
         with transaction.atomic():
             items = order.items.select_related('product').select_for_update()
