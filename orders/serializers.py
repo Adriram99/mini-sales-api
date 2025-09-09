@@ -32,18 +32,35 @@ class OrderSerializer(serializers.ModelSerializer):
         with transaction.atomic():
             order = Order.objects.create(**validated_data)
         
+            # recolect product IDs or instances
+            product_ids = []
+            for it in items_data:
+                prod = it['product']
+                pid = int(prod) if isinstance(prod, (int, str)) else prod.pk
+                product_ids.append(pid)
+
+            # lock products in one query
+            products_map = {
+                p.id: p
+                for p in Product.objects.select_for_update().filter(id__in=product_ids)
+            }
+
             for item_data in items_data:
                 product = item_data['product']
                 quantity = item_data['quantity']
 
-                product = Product.objects.select_for_update.get(pk=product.pk)
+                pid = int(prod) if isinstance(prod, (int, str)) else prod.pk
 
-                # freeze the unit price at the time of order creation
-                unit_price = product.price
+                product = products_map.get(pid)
+                if product is None:
+                    raise serializers.ValidationError(f"Product {pid} not found")
 
                 # validate stock availability
                 if product.stock < quantity:
                     raise serializers.ValidationError(f"Insufficient stock for product {product.name}")
+
+                # freeze the unit price at the time of order creation
+                unit_price = product.price
             
                 # reduce stock
                 product.stock -= quantity
