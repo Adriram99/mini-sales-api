@@ -37,8 +37,12 @@ Incluye:
     docker compose run --rm web python manage.py migrate
     ```
 5. Crear superusuario:
-    ```
+    ```bash
     docker compose run --rm web python manage.py createsuperuser
+    ```
+7. Configurar seed:
+    ```bash
+    docker compose run --rm web python manage.py seed
     ```
 6. Acceder:
     - API Docs: http://localhost:8000/api/docs/
@@ -51,6 +55,36 @@ Incluye:
 - **manager** -> CRUD completo de toda la API.
 - **seller** -> puede crear/actualizar ordenes y ejecutar pay/cancel. Solo lectura del catálogo.
 - **viewer** -> solo lectura de toda la API.
+
+--
+
+## Configuración y uso de Celery y Beat
+- Worker:
+    ```bash
+    docker compose logs -f celery
+    ```
+- Beat (scheduler):
+    ```bash
+    docker compose logs -f celery-beat
+    ```
+#### Tarea para generar .csv de ventas diarias
+Se ejecuta todos los días a las 22:00 y genera un CSV en `/tmp/`:
+- Archivo: `/tmp/daily_sales_YYYY-MM-DD.csv
+- Contenido: `Order ID, Customer Email, Items Count, Total Amount, Status, Created At`
+
+#### Para ejecutar manualmente
+    ```bash
+    docker compose run --rm web python manage.py shell
+    ```
+    
+    ```python
+    from orders.tasks import export_daily_orders_to_csv
+    export_daily_orders_to_csv.delay()
+    ```
+#### Ver archivo generado
+    ```bash
+    docker compose exec web ls /tmp
+    ```
 
 --
 
@@ -141,3 +175,19 @@ curl -X post http://localhost:8000/api/products/1/labels/ \
     -H "Content-Type: application/json" \
     -u admin:password \
     -d '{"label_id": 3}'
+```
+- Crear orden con items:
+```bash
+curl -X post http://localhost:8000/api/orders/ \
+    -H "Content-Type: application/json" \
+    -u user:password \
+    -d '{"customer": 1, "items": [{"product": 1, "quantity": 1}]}'
+```
+- Pagar una orden:
+```bash
+curl -X POST http://localhost:8000/api/orders/1/pay/ \
+    -u user:password
+
+- Cancelar una orden:
+curl -X POST http://localhost:8000/api/orders/2/cancel/ \
+    -u user:password
