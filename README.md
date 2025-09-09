@@ -40,7 +40,7 @@ Incluye:
     ```bash
     docker compose run --rm web python manage.py createsuperuser
     ```
-7. Configurar seed:
+7. Ejecutar seed:
     ```bash
     docker compose run --rm web python manage.py seed
     ```
@@ -50,11 +50,14 @@ Incluye:
 
 -- 
 
-## Roles de usuario
+## Roles de usuario y credenciales
 
 - **manager** -> CRUD completo de toda la API.
+    - manager1:managerpass
 - **seller** -> puede crear/actualizar ordenes y ejecutar pay/cancel. Solo lectura del catálogo.
+    - seller1:sellerpass
 - **viewer** -> solo lectura de toda la API.
+    -viewer1:viewerpass
 
 --
 
@@ -68,7 +71,7 @@ Incluye:
     docker compose logs -f celery-beat
     ```
 #### Tarea para generar .csv de ventas diarias
-Se ejecuta todos los días a las 22:00 y genera un CSV en `/tmp/`:
+Se ejecuta todos los días a las 22:00 y genera un CSV en `/tmp/` dentro del contenedor:
 - Archivo: `/tmp/daily_sales_YYYY-MM-DD.csv
 - Contenido: `Order ID, Customer Email, Items Count, Total Amount, Status, Created At`
 
@@ -82,13 +85,15 @@ Se ejecuta todos los días a las 22:00 y genera un CSV en `/tmp/`:
     export_daily_orders_to_csv.delay()
     ```
 #### Ver archivo generado
-    ```bash
-    docker compose exec web ls /tmp
-    ```
+Este archivo se ve reflejado en /reports donde se levanto el docker, para facilitar el acceso al reporte.
 
 --
 
 ## Endpoints principales
+
+#### Auth
+- `POST /api/auth/token/`
+- `POST /api/auth/token/refresh/`
 
 #### Products
 - `GET /api/products/`
@@ -162,32 +167,61 @@ Se ejecuta todos los días a las 22:00 y genera un CSV en `/tmp/`:
 
 ## Ejemplos con cURL
 
+- Iniciar sesión:
+```bash
+TOKEN=$(curl -s http://localhost:8000/api/auth/token/ \
+  -H "Content-Type: application/json" \
+  -d '{"username":"manager","password":"pass"}' | jq -r .access)
+```
 - Crear un producto:
 ```bash
-curl -X post http://localhost:8000/api/products/ \
-    -H "Content-Type: application/json" \
-    -u admin:password \
-    -d '{"name": "Mouse", "sku": "MOU-001", "price": "150000", "stock": 7}'
+curl -X POST http://localhost:8000/api/products/ \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Mouse Gamer","sku":"MOU-001","price":"25.00","stock":50}'
+```
+- Crear una etiqueta:
+```bash
+curl -X POST http://localhost:8000/api/labels/ \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Electrónica"}'
 ```
 - Etiquetar un producto:
 ```bash
-curl -X post http://localhost:8000/api/products/1/labels/ \
-    -H "Content-Type: application/json" \
-    -u admin:password \
-    -d '{"label_id": 3}'
+curl -X POST http://localhost:8000/api/products/1/labels/ \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"label_name":"Electrónica"}'
 ```
 - Crear orden con items:
 ```bash
-curl -X post http://localhost:8000/api/orders/ \
-    -H "Content-Type: application/json" \
-    -u user:password \
-    -d '{"customer": 1, "items": [{"product": 1, "quantity": 1}]}'
+curl -X POST http://localhost:8000/api/orders/ \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+        "customer": 1,
+        "items": [
+          {"product": 1, "quantity": 2},
+          {"product": 2, "quantity": 1}
+        ]
+      }'
 ```
 - Pagar una orden:
 ```bash
 curl -X POST http://localhost:8000/api/orders/1/pay/ \
-    -u user:password
-
+  -H "Authorization: Bearer $TOKEN"
+```
+```bash
 - Cancelar una orden:
-curl -X POST http://localhost:8000/api/orders/2/cancel/ \
-    -u user:password
+curl -X POST http://localhost:8000/api/orders/1/cancel/ \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+--
+
+## Tests
+Para ejecutar los tests (el servicio debe estar activo): 
+```bash
+docker compose exec web python manage.py test
+```
