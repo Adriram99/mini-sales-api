@@ -36,7 +36,7 @@ class ProductViewSet(viewsets.ModelViewSet):
             return Response({'error': 'Provide label_id or label_name'}, status=status.HTTP_400_BAD_REQUEST)
         
         product.labels.add(label)
-        return Response(ProductSerializer(product).data, status=status.HTTP_200_OK)
+        return Response(ProductSerializer(product, context={'request': request}).data, status=status.HTTP_200_OK)
 
     # DELETE /products/{id}/remove_label/ -> remove label from product
     @action(detail=True, methods=["delete"], url_path="labels/(?P<label_id>[^/.]+)")
