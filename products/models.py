@@ -21,6 +21,6 @@ class Product(models.Model):
         return f"{self.name} ({self.sku})"
     
     class Meta:
-        constrains = [
+        constraints = [
             models.CheckConstraint(check=Q(stock__gte=0), name='stock_gte_0'),
         ]
