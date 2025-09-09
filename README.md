@@ -27,7 +27,7 @@ Incluye:
     ```
 2. Copiar el archivo de entorno:
     ```bash
-    cp .env.example .env
+    cp env-example.txt .env
     ```
 3. Levantar los servicios:
     ```bash
