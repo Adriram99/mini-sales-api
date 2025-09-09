@@ -61,7 +61,7 @@ class Command(BaseCommand):
                 name=fake.word().capitalize(),
                 sku= fake.unique.bothify(text='SKU-########'),
                 price = fake.random_number(digits=5),
-                stock = round(random.uniform(1.0, 100.0), 2),
+                stock = random.randint(10, 100)
             )
             product.labels.set(random.sample(labels, k=random.randint(1, len(labels))))
         self.stdout.write(f'Created {count} products.')
@@ -69,8 +69,7 @@ class Command(BaseCommand):
     def seed_customers(self, count):
         for _ in range(count):
             Customer.objects.create(
-                first_name=fake.first_name(),
-                last_name=fake.last_name(),
+                full_name=fake.name,
                 email=fake.unique.email()
             )
         self.stdout.write(f'Created {count} customers.')
