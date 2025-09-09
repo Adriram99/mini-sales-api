@@ -16,7 +16,7 @@ class OrderViewSet(viewsets.ModelViewSet):
         if order.status != 'PENDING':
             return Response({'error': 'Order cannot be paid'}, status=status.HTTP_400_BAD_REQUEST)
         
-        order.status = 'paid'
+        order.status = 'PAID'
         order.save()
         return Response(OrderSerializer(order).data)
     
@@ -33,6 +33,6 @@ class OrderViewSet(viewsets.ModelViewSet):
             product.stock += item.quantity
             product.save()
             
-        order.status = 'canceled'
+        order.status = 'CANCELLED'
         order.save()
         return Response(OrderSerializer(order).data, status=status.HTTP_200_OK)
