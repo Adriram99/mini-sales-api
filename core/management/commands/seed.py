@@ -1,4 +1,5 @@
 from django.core.management.base import BaseCommand
+from django.contrib.auth.models import User, Group
 from faker import Faker
 import random
 from products.models import Label, Product
@@ -17,13 +18,36 @@ class Command(BaseCommand):
         Label.objects.all().delete()
         Customer.objects.all().delete()
         Order.objects.all().delete()
+        User.objects.exclude(is_superuser=True).delete()
+
+        # users data test
+        users_data = [
+            {'username': 'manager1', 'password': 'managerpass', 'group': 'Manager'},
+            {'username': 'seller1', 'password': 'sellerpass', 'group': 'Seller'},
+            {'username': 'viewer1', 'password': 'viewerpass', 'group': 'Viewer'},
+        ]
 
         self.stdout.write('Seeding data...')
+        self.seed_users(users_data)
         self.seed_labels(5)
         self.seed_products(5)
         self.seed_customers(3)
         self.seed_orders(4)
         self.stdout.write('Seeding completed.')
+    
+    def seed_users(self, users_data):
+        # obtain groups
+        groups = {g.name: g for g in Group.objects.all()}
+
+        for user_data in users_data:
+            user, created = User.objects.get_or_create(username=user_data['username'])
+            user.set_password(user_data['password'])
+            user.save()
+            if user_data["group"] in groups:
+                user.groups.set([groups[user_data["group"]]])
+                self.stdout.write(self.style.SUCCESS(f'User "{user.username}" created and added to group "{user_data["group"]}".'))
+            else:
+                self.stdout.write(self.style.ERROR(f'Group "{user_data["group"]}" does not exist. check signals.py.'))
 
     def seed_labels(self, count):
         for _ in range(count):
