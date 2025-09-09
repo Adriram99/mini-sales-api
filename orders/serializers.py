@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Order, OrderItem
 from products.models import Product
+from django.db import transaction
 
 class OrderItemSerializer(serializers.ModelSerializer):
     product_name = serializers.CharField(source='product.name', read_only=True)
@@ -26,26 +27,29 @@ class OrderSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         items_data = validated_data.pop('items')
-        order = Order.objects.create(**validated_data)
+
+        # guaranteed atomic transaction
+        with transaction.atomic():
+            order = Order.objects.create(**validated_data)
         
-        for item_data in items_data:
-            product = item_data['product']
-            quantity = item_data['quantity']
+            for item_data in items_data:
+                product = item_data['product']
+                quantity = item_data['quantity']
 
-            # freeze the unit price at the time of order creation
-            unit_price = product.price
+                # freeze the unit price at the time of order creation
+                unit_price = product.price
 
-            # validate stock availability
-            if product.stock < quantity:
-                raise serializers.ValidationError(f"Insufficient stock for product {product.name}")
+                # validate stock availability
+                if product.stock < quantity:
+                    raise serializers.ValidationError(f"Insufficient stock for product {product.name}")
             
-            # reduce stock
-            product.stock -= quantity
-            product.save()
+                # reduce stock
+                product.stock -= quantity
+                product.save(update_fields=['stock'])
 
-            OrderItem.objects.create(order=order, 
-                                     product=product, 
-                                     quantity=quantity, 
-                                     unit_price=unit_price)
+                OrderItem.objects.create(order=order, 
+                                        product=product, 
+                                        quantity=quantity, 
+                                        unit_price=unit_price)
 
-            return
+        return order
