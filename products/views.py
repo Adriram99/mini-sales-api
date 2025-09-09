@@ -5,13 +5,13 @@ from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from .models import Product, Label
 from .serializers import ProductSerializer, ProductCreateUpdateSerializer, LabelSerializer
+from .filters import ProductFilter
 
 # Create your views here.
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
-    # serializer_class = ProductSerializer
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['name', 'sku', 'labels__name']
+    filterset_class = ProductFilter
 
     def get_serializer_class(self):
         if self.action in ['create', 'update', 'partial_update']:
@@ -27,7 +27,7 @@ class ProductViewSet(viewsets.ModelViewSet):
         
         if label_id:
             try:
-                label = label.objects.get(id=label_id)
+                label = Label.objects.get(id=label_id)
             except Label.DoesNotExist:
                 return Response({'error': 'Label not found'}, status=status.HTTP_404_NOT_FOUND)
         elif label_name:
