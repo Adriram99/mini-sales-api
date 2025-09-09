@@ -6,6 +6,9 @@ from django_filters.rest_framework import DjangoFilterBackend
 from .models import Product, Label
 from .serializers import ProductSerializer, ProductCreateUpdateSerializer, LabelSerializer
 from .filters import ProductFilter
+from django.db import IntegrityError
+from rest_framework.exceptions import ValidationError
+
 
 # Create your views here.
 class ProductViewSet(viewsets.ModelViewSet):
@@ -17,6 +20,12 @@ class ProductViewSet(viewsets.ModelViewSet):
         if self.action in ['create', 'update', 'partial_update']:
             return ProductCreateUpdateSerializer
         return ProductSerializer
+
+    def perform_update(self, serializer):
+        try:
+            return super().perform_update(serializer)
+        except IntegrityError as e:
+            raise ValidationError({"detail": str(e)})
 
     # POST /products/{id}/labels/ -> add label to product
     @action(detail=True, methods=['post'])
