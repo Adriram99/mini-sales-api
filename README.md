@@ -3,6 +3,7 @@
 Prueba técnica: API de gestión de ventas con **Django + DRF + Celery + Redis + PostgreSQL**.
 
 Incluye:
+- Autenticación con JWT.
 - CRUD de **Products** con etiquetas.
 - CRUD de **Customers**.
 - CRUD de **Orders** con items, validación de stock y precios congelados.
@@ -57,7 +58,7 @@ Incluye:
 - **seller** -> puede crear/actualizar ordenes y ejecutar pay/cancel. Solo lectura del catálogo.
     - seller1:sellerpass
 - **viewer** -> solo lectura de toda la API.
-    -viewer1:viewerpass
+    - viewer1:viewerpass
 
 --
 
