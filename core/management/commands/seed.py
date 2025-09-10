@@ -25,6 +25,7 @@ class Command(BaseCommand):
             {'username': 'manager1', 'password': 'managerpass', 'group': 'Manager'},
             {'username': 'seller1', 'password': 'sellerpass', 'group': 'Seller'},
             {'username': 'viewer1', 'password': 'viewerpass', 'group': 'Viewer'},
+            {'username': 'norole', 'password': 'norolepass', 'group': False}
         ]
 
         self.stdout.write('Seeding data...')
@@ -47,7 +48,7 @@ class Command(BaseCommand):
                 user.groups.set([groups[user_data["group"]]])
                 self.stdout.write(self.style.SUCCESS(f'User "{user.username}" created and added to group "{user_data["group"]}".'))
             else:
-                self.stdout.write(self.style.ERROR(f'Group "{user_data["group"]}" does not exist. check signals.py.'))
+                self.stdout.write(self.style.WARNING(f'User "{user.username}" without assigned group. It created anyway.'))
 
     def seed_labels(self, count):
         for _ in range(count):
