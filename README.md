@@ -31,7 +31,7 @@ Incluye:
     ```
 3. Levantar los servicios:
     ```bash
-    docker compose up --build
+    docker compose up -d --build
     ```
 4. Aplicar migraciones:
     ```bash
@@ -59,6 +59,8 @@ Incluye:
     - seller1:sellerpass
 - **viewer** -> solo lectura de toda la API.
     - viewer1:viewerpass
+- Se creo un usuario sin grupo/rol.
+    - norole:norolepass
 
 --
 
@@ -77,20 +79,21 @@ Se ejecuta todos los días a las 22:00 y genera un CSV en `/tmp/` dentro del con
 - Contenido: `Order ID, Customer Email, Items Count, Total Amount, Status, Created At`
 
 #### Para ejecutar manualmente
-    ```bash
-    docker compose run --rm web python manage.py shell
-    ```
-    
-    ```python
-    from orders.tasks import export_daily_orders_to_csv
-    export_daily_orders_to_csv.delay()
-    ```
+```bash
+docker compose run --rm web python manage.py shell
+```
+
+```python
+from orders.tasks import export_daily_orders_to_csv
+export_daily_orders_to_csv.delay()
+```
 #### Ver archivo generado
 Este archivo se ve reflejado en /reports donde se levanto el docker, para facilitar el acceso al reporte.
 
 --
 
 ## Endpoints principales
+Obs: se implemento paginación de API REST.
 
 #### Auth
 - `POST /api/auth/token/`
@@ -161,8 +164,8 @@ Este archivo se ve reflejado en /reports donde se levanto el docker, para facili
     "total_amount": 106373
   } 
 ```
-- `POST /api/orders/{id}/pay/` -> Para pagar una orden.
-- `POST /api/orders/{id}/cancel/` -> Para cancelar una orden.
+- `POST /api/orders/{id}/pay/` -> Para pagar una orden pendiente.
+- `POST /api/orders/{id}/cancel/` -> Para cancelar una orden pendiente o pagada.
 
 --
 
@@ -222,6 +225,13 @@ curl -X POST http://localhost:8000/api/orders/1/cancel/ \
 --
 
 ## Tests
+Los siguientes tests estan disponibles, los usuarios de prueba se generan en el script de ejecución en orders/tests.py:
+- Total de orden con múltiples ítems y precio “fijo”.
+- Crear orden descuenta stock.
+- Cancelar orden repone stock.
+- Seller no puede crear productos.
+- Viewer no puede utilizar pay/cancel y no ve stock.
+
 Para ejecutar los tests (el servicio debe estar activo): 
 ```bash
 docker compose exec web python manage.py test
