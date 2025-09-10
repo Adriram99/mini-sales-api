@@ -9,6 +9,7 @@ Incluye:
 - CRUD de **Orders** con items, validación de stock y precios congelados.
 - Grupos de usuario (`manager`, `seller`, `viewer`).
 - Generación diaria de un reporte CSV de ventas con **Celery Beat**.
+- Tests.
 
 ---
 
@@ -231,6 +232,7 @@ Los siguientes tests estan disponibles, los usuarios de prueba se generan en el 
 - Cancelar orden repone stock.
 - Seller no puede crear productos.
 - Viewer no puede utilizar pay/cancel y no ve stock.
+- Usuario sin rol/grupo/permiso no puede interactuar con EP.
 
 Para ejecutar los tests (el servicio debe estar activo): 
 ```bash
