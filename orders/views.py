@@ -4,6 +4,7 @@ from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db import transaction
+from drf_spectacular.utils import extend_schema
 
 from .models import Order
 from .serializers import OrderSerializer
@@ -19,25 +20,28 @@ class OrderViewSet(viewsets.ModelViewSet):
     ordering = ['-created_at']
 
     # POST /orders/{id}/pay/ -> to pay for an order
+    @extend_schema(request=None, responses=OrderSerializer)
     @action(detail=True, methods=['post'])
     def pay(self, request, pk=None):
         order = self.get_object()
         if order.status == 'PAID':
-            return Response({'error': 'Order already paid'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(OrderSerializer(order, context={'request': request}).data, status=status.HTTP_200_OK)
         if order.status != 'PENDING':
             return Response({'error': 'Order cannot be paid'}, status=status.HTTP_409_CONFLICT)
         
         with transaction.atomic():
             order.status = 'PAID'
             order.save(update_fields=['status'])
-        return Response(OrderSerializer(order).data, status=status.HTTP_200_OK)
+
+        return Response(OrderSerializer(order, context={'request': request}).data, status=status.HTTP_200_OK)
     
     # POST /orders/{id}/cancel/ -> to cancel an order
+    @extend_schema(request=None, responses=OrderSerializer)
     @action(detail=True, methods=['post'])
     def cancel(self, request, pk=None):
         order = self.get_object()
         if order.status == 'CANCELLED':
-            return Response({'error': 'Order already cancelled'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(OrderSerializer(order, context={'request': request}).data, status=status.HTTP_200_OK)
         if order.status not in ['PENDING', 'PAID']:
             return Response({'error': 'Order cannot be canceled'}, status=status.HTTP_409_CONFLICT)
         
@@ -48,6 +52,6 @@ class OrderViewSet(viewsets.ModelViewSet):
                 item.product.stock += item.quantity
                 item.product.save(update_fields=['stock'])
             
-        order.status = 'CANCELLED'
-        order.save(update_fields=['status'])
-        return Response(OrderSerializer(order).data, status=status.HTTP_200_OK)
+            order.status = 'CANCELLED'
+            order.save(update_fields=['status'])
+        return Response(OrderSerializer(order, context={'request': request}).data, status=status.HTTP_200_OK)
